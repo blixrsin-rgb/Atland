@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atland Convention Centre | Luxury Venues</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind Configuration for Custom Colors/Fonts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            100: '#F9F1D8',
+                            300: '#EAD18F',
+                            400: '#D4AF37', // Classic Gold
+                            500: '#C5A028',
+                            600: '#A38318',
+                        },
+                        royal: {
+                            900: '#0F1115', // Deep Black/Charcoal
+                            800: '#1A1D23',
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        playfair: ['Playfair Display', 'serif'],
+                        lato: ['Lato', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles for nuances Tailwind handles differently */
+        body {
+            background-color: #0F1115;
+            color: #f3f3f3;
+        }
+
+        /* Smooth Fade Animation */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Hero Slider Transition */
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out, transform 6s ease-in-out;
+            transform: scale(1);
+        }
+        .hero-slide.active {
+            opacity: 1;
+            transform: scale(1.05); /* Slow zoom effect */
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(26, 29, 35, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F1115;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+
+        /* Calendar Styles */
+        .calendar-day {
+            transition: all 0.3s ease;
+        }
+        .calendar-day:hover:not(.disabled) {
+            background-color: rgba(212, 175, 55, 0.2);
+            color: #D4AF37;
+            cursor: pointer;
+        }
+        .calendar-day.booked {
+            background-color: #3f1919;
+            color: #888;
+            text-decoration: line-through;
+            cursor: not-allowed;
+            border: 1px solid #5a2222;
+        }
+        .calendar-day.selected {
+            background-color: #D4AF37;
+            color: #000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="font-lato overflow-x-hidden antialiased">
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-4 px-6 lg:px-12 border-b border-transparent">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#" class="text-2xl lg:text-3xl font-cinzel font-bold text-white tracking-wider">
+                ATLAND<span class="text-gold-400">.</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#home" class="text-sm uppercase tracking-widest text-gray-300 hover:text-gold-400 transition-colors">Home</a>
+                <a href="#gallery" class="text-sm uppercase tracking-widest text-gray-300 hover:text-gold-400 transition-colors">Gallery</a>
+                <a href="#booking" class="text-sm uppercase tracking-widest text-gray-300 hover:text-gold-400 transition-colors">Booking</a>
+                <a href="#contact" class="text-sm uppercase tracking-widest text-gray-300 hover:text-gold-400 transition-colors">Contact</a>
+                <a href="#booking" class="border border-gold-400 text-gold-400 px-6 py-2 uppercase text-xs tracking-widest hover:bg-gold-400 hover:text-black transition-all duration-300">Book Now</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-gold-400 text-2xl focus:outline-none">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Dropdown -->
+        <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-royal-900 border-b border-gold-600/30 p-6 flex flex-col space-y-4 md:hidden shadow-2xl">
+            <a href="#home" class="text-white hover:text-gold-400 uppercase tracking-widest">Home</a>
+            <a href="#gallery" class="text-white hover:text-gold-400 uppercase tracking-widest">Gallery</a>
+            <a href="#booking" class="text-white hover:text-gold-400 uppercase tracking-widest">Booking</a>
+            <a href="#contact" class="text-white hover:text-gold-400 uppercase tracking-widest">Contact</a>
+        </div>
+    </nav>
+
+    <!-- 1. HERO SECTION -->
+    <section id="home" class="relative h-screen w-full overflow-hidden flex items-center justify-center">
+        <!-- Slideshow Backgrounds -->
+        <div id="hero-slider" class="absolute inset-0 z-0 bg-black">
+            <!-- Slide 1 -->
+            <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=2098&auto=format&fit=crop');"></div>
+            <!-- Slide 2 -->
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1505944357481-42b0e913253c?q=80&w=2070&auto=format&fit=crop');"></div>
+            <!-- Slide 3 -->
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1561412437-0208223d6a2a?q=80&w=1974&auto=format&fit=crop');"></div>
+            
+            <!-- Dark Overlay -->
+            <div class="absolute inset-0 bg-black/60 bg-gradient-to-t from-royal-900 via-transparent to-black/30"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16">
+            <p class="text-gold-400 uppercase tracking-[0.3em] mb-4 animate-fade-in-up text-sm md:text-base">Experience Luxury</p>
+            <h1 class="font-cinzel text-5xl md:text-7xl lg:text-8xl text-white mb-6 leading-tight drop-shadow-2xl">
+                Atland <br /><span class="text-transparent bg-clip-text bg-gradient-to-r from-gold-300 to-gold-600">Convention</span>
+            </h1>
+            <p class="font-playfair text-xl md:text-2xl text-gray-200 italic mb-10 font-light">
+                "Where Celebrations Become Timeless Memories"
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <a href="#booking" class="bg-gold-400 text-black px-8 py-4 uppercase tracking-widest text-sm font-bold hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                    Check Availability
+                </a>
+                <a href="#gallery" class="border border-white/30 text-white px-8 py-4 uppercase tracking-widest text-sm font-bold hover:bg-white hover:text-black transition-all duration-300 backdrop-blur-sm">
+                    View Gallery
+                </a>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-white/50">
+            <i class="fa-solid fa-chevron-down text-2xl"></i>
+        </div>
+    </section>
+
+    <!-- 2. GALLERY / ABOUT SECTION -->
+    <section id="gallery" class="py-24 bg-royal-900 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 fade-on-scroll">
+                <h2 class="font-cinzel text-3xl md:text-5xl text-white mb-4">Our <span class="text-gold-400">Venues</span></h2>
+                <div class="h-1 w-24 bg-gold-400 mx-auto mb-6"></div>
+                <p class="text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">
+                    Designed with an eye for elegance and grandeur, Atland offers spaces that transform ordinary gatherings into royal affairs.
+                </p>
+            </div>
+
+            <!-- Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Image 1 -->
+                <div class="group relative overflow-hidden h-80 fade-on-scroll">
+                    <img src="https://www.heidelbergmaterials.com/sites/default/files/2024-07/vcc254_sbp_0225.jpg
+                    " alt="Hall" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <h3 class="text-white font-playfair text-2xl italic">The Grand Ballroom</h3>
+                    </div>
+                </div>
+                <!-- Image 2 -->
+                <div class="group relative overflow-hidden h-80 fade-on-scroll">
+                    <img src="https://images.jdmagicbox.com/v2/comp/malappuram/w9/9999px483.x483.230831151240.x5w9/catalogue/atland-convention-centre-pulparambu-malappuram-community-halls-370clbyp0j.jpg" alt="Catering" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <h3 class="text-white font-playfair text-2xl italic">Premium Decor</h3>
+                    </div>
+                </div>
+                <!-- Image 3 -->
+                <div class="group relative overflow-hidden h-80 fade-on-scroll">
+                    <img src="https://balisunsetroadconvention.com/wp-content/uploads/2024/06/convention-hall-adalah.jpg" alt="Decor" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <h3 class="text-white font-playfair text-2xl italic">Exquisite Catering</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. BOOKING SECTION -->
+    <section id="booking" class="py-24 bg-royal-800 relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 fade-on-scroll">
+                <h2 class="font-cinzel text-3xl md:text-5xl text-white mb-4">Reserve <span class="text-gold-400">Your Date</span></h2>
+                <div class="h-1 w-24 bg-gold-400 mx-auto mb-6"></div>
+                <p class="text-gray-400">Select a date from the calendar to check availability and proceed with your booking.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                
+                <!-- Left: Calendar -->
+                <div class="fade-on-scroll">
+                    <div class="glass-panel p-8 rounded-sm shadow-2xl">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 id="currentMonthYear" class="text-gold-400 font-playfair text-2xl italic"></h3>
+                            <div class="flex space-x-2">
+                                <button id="prevMonth" class="text-gray-400 hover:text-white"><i class="fa-solid fa-chevron-left"></i></button>
+                                <button id="nextMonth" class="text-gray-400 hover:text-white"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Days Header -->
+                        <div class="grid grid-cols-7 mb-4 text-center text-xs uppercase text-gray-500 tracking-wider">
+                            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                        </div>
+                        
+                        <!-- Days Grid -->
+                        <div id="calendarGrid" class="grid grid-cols-7 gap-2 text-center text-gray-300 font-lato text-sm">
+                            <!-- Generated via JS -->
+                        </div>
+
+                        <div class="mt-6 flex items-center gap-4 text-xs text-gray-500 uppercase tracking-widest">
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 bg-gold-400 rounded-full"></span> Selected</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 bg-[#3f1919] border border-[#5a2222] rounded-full"></span> Booked</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 bg-transparent border border-gray-600 rounded-full"></span> Available</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Booking Form -->
+                <div class="fade-on-scroll">
+                    <form id="bookingForm" class="glass-panel p-8 rounded-sm space-y-6">
+                        <input type="hidden" id="selectedDateInput" required>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Name -->
+                            <div class="relative">
+                                <input type="text" id="fullName" class="peer w-full bg-transparent border-b border-gray-600 py-2 text-white focus:outline-none focus:border-gold-400 transition-colors placeholder-transparent" placeholder="Full Name" required>
+                                <label for="fullName" class="absolute left-0 -top-3.5 text-xs text-gold-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gold-400 peer-focus:text-xs">Full Name</label>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="relative">
+                                <input type="tel" id="phone" class="peer w-full bg-transparent border-b border-gray-600 py-2 text-white focus:outline-none focus:border-gold-400 transition-colors placeholder-transparent" placeholder="Phone Number" required>
+                                <label for="phone" class="absolute left-0 -top-3.5 text-xs text-gold-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gold-400 peer-focus:text-xs">Phone Number</label>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="relative">
+                            <input type="email" id="email" class="peer w-full bg-transparent border-b border-gray-600 py-2 text-white focus:outline-none focus:border-gold-400 transition-colors placeholder-transparent" placeholder="Email Address" required>
+                            <label for="email" class="absolute left-0 -top-3.5 text-xs text-gold-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gold-400 peer-focus:text-xs">Email Address</label>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Time -->
+                            <div>
+                                <label class="block text-xs text-gold-400 mb-2 uppercase tracking-wide">Event Time</label>
+                                <select id="eventTime" class="w-full bg-royal-800 border border-gray-600 text-white p-2 focus:border-gold-400 focus:outline-none">
+                                    <option>Morning (9:00 AM - 2:00 PM)</option>
+                                    <option>Evening (5:00 PM - 11:00 PM)</option>
+                                    <option>Full Day</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Event Type -->
+                            <div>
+                                <label class="block text-xs text-gold-400 mb-2 uppercase tracking-wide">Event Type</label>
+                                <select id="eventType" class="w-full bg-royal-800 border border-gray-600 text-white p-2 focus:border-gold-400 focus:outline-none">
+                                    <option>Wedding</option>
+                                    <option>Engagement</option>
+                                    <option>Birthday Party</option>
+                                    <option>Corporate Event</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Guests -->
+                        <div class="relative pt-4">
+                            <input type="number" id="guestCount" class="peer w-full bg-transparent border-b border-gray-600 py-2 text-white focus:outline-none focus:border-gold-400 transition-colors placeholder-transparent" placeholder="Number of Guests" required min="50">
+                            <label for="guestCount" class="absolute left-0 top-0.5 text-xs text-gold-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-6 peer-focus:top-0.5 peer-focus:text-gold-400 peer-focus:text-xs">Estimated Guests</label>
+                        </div>
+                        
+                         <!-- Display Selected Date -->
+                         <div class="text-sm text-gray-400 border-l-2 border-gold-400 pl-4 py-1">
+                            Selected Date: <span id="displaySelectedDate" class="text-white font-bold">Please select a date</span>
+                        </div>
+
+                        <!-- Requirements -->
+                        <div class="relative">
+                            <textarea id="requirements" rows="3" class="peer w-full bg-transparent border-b border-gray-600 py-2 text-white focus:outline-none focus:border-gold-400 transition-colors placeholder-transparent" placeholder="Requirements"></textarea>
+                            <label for="requirements" class="absolute left-0 -top-3.5 text-xs text-gold-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gold-400 peer-focus:text-xs">Additional Requirements</label>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gold-400 text-black font-bold uppercase tracking-widest py-3 hover:bg-white transition-all duration-300">Confirm Booking Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. CONTACT SECTION -->
+    <section id="contact" class="py-24 bg-royal-900 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 fade-on-scroll">
+                <h2 class="font-cinzel text-3xl md:text-5xl text-white mb-4">Contact <span class="text-gold-400">Us</span></h2>
+                <div class="h-1 w-24 bg-gold-400 mx-auto mb-6"></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Info -->
+                <div class="space-y-8 fade-on-scroll">
+                    <div class="flex items-start space-x-6">
+                        <div class="text-gold-400 text-2xl mt-1"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <h4 class="text-white font-playfair text-xl mb-2">Location</h4>
+                            <p class="text-gray-400 font-light">123 Royal Avenue, Skyline District,<br>Metropolis, AT 50012</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-6">
+                        <div class="text-gold-400 text-2xl mt-1"><i class="fa-solid fa-phone"></i></div>
+                        <div>
+                            <h4 class="text-white font-playfair text-xl mb-2">Phone</h4>
+                            <p class="text-gray-400 font-light hover:text-white transition-colors cursor-pointer">+1 (555) 123-4567</p>
+                            <p class="text-gray-400 font-light hover:text-white transition-colors cursor-pointer">+1 (555) 987-6543</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-6">
+                        <div class="text-gold-400 text-2xl mt-1"><i class="fa-brands fa-whatsapp"></i></div>
+                        <div>
+                            <h4 class="text-white font-playfair text-xl mb-2">WhatsApp</h4>
+                            <p class="text-gray-400 font-light hover:text-white transition-colors cursor-pointer">+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-6">
+                        <div class="text-gold-400 text-2xl mt-1"><i class="fa-solid fa-envelope"></i></div>
+                        <div>
+                            <h4 class="text-white font-playfair text-xl mb-2">Email</h4>
+                            <p class="text-gray-400 font-light hover:text-white transition-colors cursor-pointer">bookings@atlandcentre.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map -->
+                <div class="h-80 w-full rounded-sm overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 border border-gold-600/30 fade-on-scroll">
+                   <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes%20Square!5e0!3m2!1sen!2sus!4v1622222222222!5m2!1sen!2sus" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-8 border-t border-gray-900">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <p class="text-gray-500 text-sm">&copy; 2023 Atland Convention Centre. All Rights Reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="text-gray-500 hover:text-gold-400 transition-colors"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#" class="text-gray-500 hover:text-gold-400 transition-colors"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="text-gray-500 hover:text-gold-400 transition-colors"><i class="fa-brands fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SUCCESS MODAL (Hidden by default) -->
+    <div id="successModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-royal-900 border border-gold-400 p-8 rounded-sm max-w-md w-full text-center relative mx-4">
+            <div class="w-16 h-16 bg-gold-400 rounded-full flex items-center justify-center mx-auto mb-4 text-black text-2xl">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="font-cinzel text-2xl text-white mb-2">Booking Requested</h3>
+            <p class="text-gray-300 font-light mb-6">Thank you, <span id="modalName"></span>. We have received your request for <span id="modalDate" class="text-gold-400"></span>. We will contact you shortly.</p>
+            
+           <div class="flex justify-center gap-4">
+    <button id="closeModal" class="border border-gray-500 text-gray-300 px-6 py-2 uppercase text-xs hover:border-white hover:text-white transition-colors">Close</button>
+    
+    <a href="https://wa.me/918891529943" target="_blank" class="bg-[#25D366] text-white border border-[#25D366] px-6 py-2 uppercase text-xs hover:bg-[#128C7E] transition-colors flex items-center">
+        <i class="fa-brands fa-whatsapp mr-1"></i> Send
+    </a>
+</div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- 1. SLIDESHOW LOGIC ---
+        const slides = document.querySelectorAll('.hero-slide');
+        let currentSlide = 0;
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+        setInterval(nextSlide, 5000); // Change every 5 seconds
+
+        // --- 2. NAVBAR SCROLL EFFECT ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-royal-900', 'shadow-lg', 'border-gold-600/30');
+                navbar.classList.remove('border-transparent');
+            } else {
+                navbar.classList.remove('bg-royal-900', 'shadow-lg', 'border-gold-600/30');
+                navbar.classList.add('border-transparent');
+            }
+        });
+
+        // --- 3. MOBILE MENU ---
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // --- 4. SCROLL ANIMATIONS (Intersection Observer) ---
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-visible');
+                    entry.target.classList.remove('fade-enter');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-on-scroll').forEach(el => {
+            el.classList.add('fade-enter');
+            observer.observe(el);
+        });
+
+        // --- 5. CALENDAR & BOOKING LOGIC ---
+        const calendarGrid = document.getElementById('calendarGrid');
+        const currentMonthYear = document.getElementById('currentMonthYear');
+        const prevBtn = document.getElementById('prevMonth');
+        const nextBtn = document.getElementById('nextMonth');
+        const dateInput = document.getElementById('selectedDateInput');
+        const displayDate = document.getElementById('displaySelectedDate');
+        
+        let today = new Date();
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
+        let selectedDateString = null;
+
+        // Mock Booked Dates (Format: YYYY-MM-DD)
+        // Let's pre-book some dates in the current month for demo
+        const bookedDates = new Set();
+        
+        // Helper: Book a random date next week
+        let nextWeek = new Date();
+        nextWeek.setDate(today.getDate() + 7);
+        bookedDates.add(nextWeek.toISOString().split('T')[0]);
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        function renderCalendar(month, year) {
+            calendarGrid.innerHTML = "";
+            currentMonthYear.textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay(); // 0 = Sun
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Empty cells for previous month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            // Days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const cell = document.createElement('div');
+                cell.textContent = day;
+                cell.className = "p-2 rounded-full w-8 h-8 flex items-center justify-center mx-auto calendar-day";
+
+                // Check Past Date
+                const checkDate = new Date(year, month, day);
+                const now = new Date();
+                now.setHours(0,0,0,0);
+                
+                if (checkDate < now) {
+                    cell.classList.add('text-gray-700', 'cursor-not-allowed', 'disabled');
+                } 
+                // Check Booked
+                else if (bookedDates.has(dateStr)) {
+                    cell.classList.add('booked');
+                    cell.title = "Booked";
+                } 
+                // Available
+                else {
+                    cell.onclick = () => selectDate(cell, dateStr);
+                    if (selectedDateString === dateStr) {
+                        cell.classList.add('selected');
+                    }
+                }
+
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        function selectDate(cell, dateStr) {
+            // Remove previous selection
+            document.querySelectorAll('.calendar-day.selected').forEach(el => el.classList.remove('selected'));
+            
+            // Add new selection
+            cell.classList.add('selected');
+            selectedDateString = dateStr;
+            dateInput.value = dateStr;
+            
+            // Format for display
+            const dateObj = new Date(dateStr);
+            displayDate.textContent = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            displayDate.classList.add('text-gold-400');
+        }
+
+        prevBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        // Initial Render
+        renderCalendar(currentMonth, currentYear);
+
+
+        // --- 6. FORM SUBMISSION ---
+        const form = document.getElementById('bookingForm');
+        const modal = document.getElementById('successModal');
+        const modalName = document.getElementById('modalName');
+        const modalDate = document.getElementById('modalDate');
+        const closeModal = document.getElementById('closeModal');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (!selectedDateString) {
+                alert("Please select a date from the calendar first.");
+                return;
+            }
+
+            // Simulate Booking
+            const name = document.getElementById('fullName').value;
+            bookedDates.add(selectedDateString); // Add to booked set
+            
+            // Reset and Re-render
+            renderCalendar(currentMonth, currentYear); // Will now show red
+            
+            // Show Modal
+            modalName.textContent = name;
+            modalDate.textContent = displayDate.textContent;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            form.reset();
+            displayDate.textContent = "Please select a date";
+            selectedDateString = null;
+        });
+
+        closeModal.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+
+    </script>
+</body>
+</html>
